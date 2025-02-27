@@ -680,14 +680,35 @@ function App() {
 
   // Features data
   const features = [
+
+    {
+      icon: GraduationCap,
+      title: "Learning Platform",
+      description:
+        "Access specialized educational resources tailored to your learning style. Our platform offers interactive lessons, exercises, and tools designed specifically for dyslexic learners to build confidence and skills.",
+      buttonText: "Start Learning",
+      link: "https://lexilearn-neon.vercel.app/",
+      videoUrl: "/learn.mp4",
+    },
+
+        {
+      icon: MessageSquareMore,
+      title: "AI Therapist",
+      description:
+        "Get instant help and guidance from our AI-powered Therapist, available 24/7 to assist with any questions. Our advanced AI understands dyslexia-related challenges and provides personalized support whenever you need it.",
+      buttonText: "Start Chat",
+      link: "https://dyslu4-0.onrender.com/",
+      videoUrl: "/therapy.mp4",
+    },
+
     {
       icon: Brain,
       title: "Consult a Doctor",
       description:
         "Connect with specialized healthcare professionals for personalized guidance and support. Our network of experts understands the unique challenges of dyslexia and provides tailored advice for your specific needs.",
       buttonText: "Find Specialists",
-      link: "#",
-      videoUrl: "https://example.com/doctor-consultation.mp4",
+      link: "https://lexicare.vercel.app/",
+      videoUrl: "/care.mp4",
     },
     {
       icon: Users,
@@ -695,8 +716,8 @@ function App() {
       description:
         "Join our vibrant community of individuals sharing experiences and support. Connect with others who understand your journey, share strategies, and build lasting relationships with people who truly get it.",
       buttonText: "Join Community",
-      link: "#",
-      videoUrl: "https://example.com/community-support.mp4",
+      link: "https://lexilearn-neon.vercel.app/support",
+      videoUrl: "/commu.mp4",
     },
     {
       icon: FileText,
@@ -704,17 +725,8 @@ function App() {
       description:
         "Transform any text into an easy-to-read format optimized for dyslexic readers. Our innovative technology adjusts spacing, font, and layout to make reading more accessible and enjoyable for everyone.",
       buttonText: "Try Converter",
-      link: "#",
-      videoUrl: "https://example.com/text-converter.mp4",
-    },
-    {
-      icon: GraduationCap,
-      title: "Learning Platform",
-      description:
-        "Access specialized educational resources tailored to your learning style. Our platform offers interactive lessons, exercises, and tools designed specifically for dyslexic learners to build confidence and skills.",
-      buttonText: "Start Learning",
-      link: "#",
-      videoUrl: "https://example.com/learning-platform.mp4",
+      link: "https://lexishift-new.onrender.com/",
+      videoUrl: "/pdf.mp4",
     },
     {
       icon: BookOpen,
@@ -722,18 +734,10 @@ function App() {
       description:
         "Access our extensive collection of dyslexia-friendly books and reading materials. Enjoy literature, textbooks, and articles formatted specifically for easier reading with adjustable settings to match your preferences.",
       buttonText: "Browse Library",
-      link: "#",
-      videoUrl: "https://example.com/digital-library.mp4",
+      link: "https://lexishift-new.onrender.com/learn_more",
+      videoUrl: "/Library.mp4",
     },
-    {
-      icon: MessageSquareMore,
-      title: "AI Therapist",
-      description:
-        "Get instant help and guidance from our AI-powered Therapist, available 24/7 to assist with any questions. Our advanced AI understands dyslexia-related challenges and provides personalized support whenever you need it.",
-      buttonText: "Start Chat",
-      link: "#",
-      videoUrl: "https://example.com/ai-therapist.mp4",
-    },
+
   ]
 
   return (
