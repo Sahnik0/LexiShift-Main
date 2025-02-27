@@ -523,7 +523,7 @@ function Learning() {
   const handleAnswerSubmit = async (questionIndex, answerIndex) => {
     const currentQuiz = modules[activeModule].quiz[questionIndex];
     const isCorrect = answerIndex === currentQuiz.correct;
-
+  
     // Update answers immediately
     const newAnswers = {
       ...userAnswers,
@@ -533,22 +533,36 @@ function Learning() {
       }
     };
     setUserAnswers(newAnswers);
-
+  
     // Play sound feedback
     if (settings.audioEnabled) {
       playSound(isCorrect ? '/sound/correct.mp3' : '/sound/incorrect.mp3');
     }
-
-    // Get AI feedback
-    const feedback = await generateFeedback(
-      currentQuiz.options[answerIndex],
-      currentQuiz.options[currentQuiz.correct],
-      modules[activeModule].title
-    );
-
-    setFeedback(feedback);
-    setAnnouncement(`${isCorrect ? 'Correct' : 'Incorrect'}. ${feedback}`);
-
+  
+    try {
+      // Get AI feedback
+      const feedbackText = await generateFeedback(
+        currentQuiz.options[answerIndex],
+        currentQuiz.options[currentQuiz.correct],
+        modules[activeModule].title
+      );
+  
+      // Prefix with Correct/Incorrect
+      const prefixedFeedback = `${isCorrect ? 'Correct!' : 'Incorrect.'} ${feedbackText}`;
+      
+      setFeedback(prefixedFeedback);
+      setAnnouncement(prefixedFeedback);
+    } catch (error) {
+      console.error('Error getting AI feedback:', error);
+      // Fallback feedback if AI call fails
+      const fallbackFeedback = isCorrect 
+        ? `Correct! Great job!` 
+        : `Incorrect. The correct answer is: ${currentQuiz.options[currentQuiz.correct]}.`;
+      
+      setFeedback(fallbackFeedback);
+      setAnnouncement(fallbackFeedback);
+    }
+  
     // Check if this is the last question
     const isLastQuestion = questionIndex === modules[activeModule].quiz.length - 1;
     
@@ -579,8 +593,32 @@ function Learning() {
   // Get AI hint
   const getHint = async () => {
     const currentQuiz = modules[activeModule].quiz[currentQuestion];
-    const hint = await generateHint(currentQuiz.question, modules[activeModule].title);
-    setAnnouncement(hint);
+    
+    try {
+      // First check if there are built-in hints in the question
+      if (currentQuiz.hints && currentQuiz.hints.length > 0) {
+        // Use a random hint from the available hints
+        const randomIndex = Math.floor(Math.random() * currentQuiz.hints.length);
+        setAnnouncement(currentQuiz.hints[randomIndex]);
+        setFeedback(currentQuiz.hints[randomIndex]);
+        return;
+      }
+      
+      // If no built-in hints, use AI to generate one
+      const hint = await generateHint(
+        currentQuiz.question, 
+        modules[activeModule].title
+      );
+      
+      setAnnouncement(hint);
+      setFeedback(hint);
+    } catch (error) {
+      console.error('Error getting AI hint:', error);
+      // Fallback hint if AI call fails
+      const fallbackHint = "Think about what we've learned in this module. You can do this!";
+      setAnnouncement(fallbackHint);
+      setFeedback(fallbackHint);
+    }
   };
 
   const handleNextModule = () => {
@@ -838,17 +876,17 @@ function Learning() {
             </div>
 
             {feedback && (
-              <div className="p-4 bg-white/10 rounded-lg mb-4">
-                {feedback}
-              </div>
-            )}
+  <div className="p-4 bg-white/10 rounded-lg mb-4">
+    {feedback}
+  </div>
+)}
 
-            <button
-              onClick={getHint}
-              className="text-blue-400 hover:text-blue-300 transition-all"
-            >
-              Need a hint?
-            </button>
+<button
+  onClick={getHint}
+  className="text-blue-400 hover:text-blue-300 transition-all"
+>
+  Need a hint?
+</button>
           </div>
         )}
 
