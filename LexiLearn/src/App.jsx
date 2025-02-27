@@ -1,35 +1,68 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { AudioProvider } from './contexts/AudioContext';
+import { ProgressProvider } from './contexts/ProgressContext';
+import { SettingsProvider } from './contexts/SettingsContext';
+import { AIProvider } from './contexts/AIContext';
+import Navbar from './components/Navbar';
+import Home from './components/Home';
+import About from './components/About';
+import Resources from './components/Resources';
+import Screening from './components/Screening';
+import Support from './components/Support';
+import Learning from './components/Learning';
+import Login from './components/Login';
+import ProtectedRoute from './components/ProtectedRoute';
+import './styles/fonts.css';
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  console.log('App component rendering...');
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <AuthProvider>
+      <AudioProvider>
+        <ProgressProvider>
+          <SettingsProvider>
+            <AIProvider>
+              <Router>
+                <div className="min-h-screen bg-gray-50">
+                  <Navbar />
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/" element={
+                      <ProtectedRoute>
+                        <Home />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/resources" element={
+                      <ProtectedRoute>
+                        <Resources />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/screening" element={
+                      <ProtectedRoute>
+                        <Screening />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/support" element={
+                      <ProtectedRoute>
+                        <Support />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/learning" element={
+                      <ProtectedRoute>
+                        <Learning />
+                      </ProtectedRoute>
+                    } />
+                  </Routes>
+                </div>
+              </Router>
+            </AIProvider>
+          </SettingsProvider>
+        </ProgressProvider>
+      </AudioProvider>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
