@@ -33,7 +33,7 @@ const resources = {
       downloads: 1234,
       lastUpdated: "2024-02-15",
       size: "2.4MB",
-      url: "#",
+      url: "https://www.dyslexia-reading-well.com/multisensory-learning.html",
       preview: {
         type: "pdf",
         content: "sample-preview.pdf",
@@ -59,7 +59,7 @@ const resources = {
       downloads: 2156,
       lastUpdated: "2024-02-18",
       size: "156MB",
-      url: "#",
+      url: "https://dyslexiaida.org/structured-literacy-effective-instruction-for-students-with-dyslexia-and-related-reading-difficulties/",
       preview: {
         type: "mixed",
         content: "curriculum-preview.pdf",
@@ -175,7 +175,7 @@ const resources = {
       rating: 4.9,
       downloads: 3456,
       lastUpdated: "2024-02-01",
-      url: "#",
+      url: "https://childmind.org/guide/parents-guide-to-dyslexia/",
       preview: {
         type: "pdf",
         content: "parent-guide-preview.pdf",
