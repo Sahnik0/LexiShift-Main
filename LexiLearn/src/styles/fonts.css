@@ -1,0 +1,22 @@
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/font/OpenDyslexic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.font-opendyslexic {
+  font-family: 'OpenDyslexic', sans-serif;
+}
+
+.high-contrast {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+.high-contrast * {
+  background-color: #000 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+
