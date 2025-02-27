@@ -1,6 +1,6 @@
 "use client"
-import './styles.css';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import "./styles.css"
+import { DotLottieReact } from "@lottiefiles/dotlottie-react"
 import type React from "react"
 import { useRef, useState, useEffect } from "react"
 import { motion, AnimatePresence, useTransform, useScroll, useMotionValue, useSpring, useInView } from "framer-motion"
@@ -27,32 +27,177 @@ import {
   Sun,
   Moon,
   ArrowRight,
-  Star
+  Volume2,
+  VolumeX,
+  ChevronRight,
+  ChevronLeft,
+  Clock,
+  Award,
 } from "lucide-react"
 
 // Add these type declarations at the top of the file
 declare global {
   interface Window {
-    scrollTimeout: number;
+    scrollTimeout: number
   }
 }
 
-// Add type for FeatureCard props
-interface FeatureCardProps {
-  icon: React.ElementType;
-  title: string;
-  description: string;
-  buttonText: string;
-  link: string;
-  index: number;
-  theme: string;
+// Add type for FeatureTimelineItem props
+interface FeatureTimelineItemProps {
+  icon: React.ElementType
+  title: string
+  description: string
+  buttonText: string
+  link: string
+  videoUrl: string
+  isReversed: boolean
+  theme: string
 }
 
 // Add type for FloatingSparkle props
 interface FloatingSparkleProps {
-  delay?: number;
-  size?: number;
-  theme?: string;
+  delay?: number
+  size?: number
+  theme?: string
+}
+
+// Add type for AutoPlayVideo props
+interface AutoPlayVideoProps {
+  videoUrl: string
+  theme: string
+}
+
+// Auto-playing video component
+const AutoPlayVideo: React.FC<AutoPlayVideoProps> = ({ videoUrl, theme }) => {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [isMuted, setIsMuted] = useState(true)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && videoRef.current) {
+            videoRef.current.play().catch((error) => {
+              console.error("Error playing video:", error)
+            })
+          } else if (videoRef.current) {
+            videoRef.current.pause()
+          }
+        })
+      },
+      { threshold: 0.5 },
+    )
+
+    if (videoRef.current) {
+      observer.observe(videoRef.current)
+    }
+
+    return () => {
+      if (videoRef.current) {
+        observer.unobserve(videoRef.current)
+      }
+    }
+  }, [])
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted
+      setIsMuted(!isMuted)
+    }
+  }
+
+  return (
+    <div className="relative rounded-xl overflow-hidden shadow-xl group">
+      <video
+        ref={videoRef}
+        className="w-full h-full object-cover rounded-xl"
+        loop
+        muted={isMuted}
+        playsInline
+        poster="/placeholder.svg?height=400&width=600"
+      >
+        <source src={videoUrl} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+
+      <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <motion.button
+          onClick={toggleMute}
+          className={`p-2 rounded-full ${theme === "dark" ? "bg-black/60" : "bg-white/60"} backdrop-blur-sm`}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          {isMuted ? (
+            <VolumeX className={`w-5 h-5 ${theme === "dark" ? "text-white" : "text-black"}`} />
+          ) : (
+            <Volume2 className={`w-5 h-5 ${theme === "dark" ? "text-white" : "text-black"}`} />
+          )}
+        </motion.button>
+      </div>
+    </div>
+  )
+}
+
+// Timeline Feature Item
+const FeatureTimelineItem: React.FC<FeatureTimelineItemProps> = ({
+  icon: Icon,
+  title,
+  description,
+  buttonText,
+  link,
+  videoUrl,
+  isReversed,
+  theme,
+}) => {
+  const itemRef = useRef(null)
+  const isInView = useInView(itemRef, { once: false, amount: 0.3 })
+
+  return (
+    <motion.div
+      ref={itemRef}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{ duration: 0.5 }}
+      className={`grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-24 ${isReversed ? "md:flex-row-reverse" : ""}`}
+    >
+      <div className={`order-2 ${isReversed ? "md:order-1" : "md:order-2"}`}>
+        <AutoPlayVideo videoUrl={videoUrl} theme={theme} />
+      </div>
+
+      <div className={`order-1 ${isReversed ? "md:order-2" : "md:order-1"}`}>
+        <div
+          className={`feature-timeline-content p-8 rounded-xl ${
+            theme === "dark" ? "bg-white/5 border border-white/10" : "bg-black/5 border border-gray-200"
+          }`}
+        >
+          <div className="flex items-center gap-4 mb-6">
+            <div className={`p-4 rounded-full ${theme === "dark" ? "bg-white/10" : "bg-black/5"}`}>
+              <Icon className={`w-8 h-8 ${theme === "dark" ? "text-white" : "text-black"}`} strokeWidth={1.5} />
+            </div>
+            <h3 className={`text-2xl font-bold ${theme === "light" ? "text-stroke-light" : ""}`}>{title}</h3>
+          </div>
+
+          <p className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} mb-8 text-lg leading-relaxed`}>
+            {description}
+          </p>
+
+          <motion.a
+            href={link}
+            className={`${
+              theme === "dark" ? "bg-white text-black hover:bg-gray-200" : "bg-black text-white hover:bg-gray-800"
+            } px-8 py-3 rounded-full text-lg font-semibold transition-all flex items-center space-x-2 w-fit`}
+            whileHover={{ scale: 1.05, x: 5 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span>{buttonText}</span>
+            <motion.span initial={{ x: 0 }} whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 400 }}>
+              <ArrowRight className="w-5 h-5" />
+            </motion.span>
+          </motion.a>
+        </div>
+      </div>
+    </motion.div>
+  )
 }
 
 // Improved Navbar with glass morphism effect
@@ -64,8 +209,8 @@ const Navbar = ({ theme, toggleTheme }: { theme: string; toggleTheme: () => void
     const handleScroll = () => {
       setScrolled(window.scrollY > 50)
     }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
   const navLinks = [
@@ -87,8 +232,8 @@ const Navbar = ({ theme, toggleTheme }: { theme: string; toggleTheme: () => void
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={`fixed w-full z-50 ${
-          scrolled 
-            ? `${theme === "dark" ? "bg-black/90" : "bg-white/90"} shadow-lg` 
+          scrolled
+            ? `${theme === "dark" ? "bg-black/90" : "bg-white/90"} shadow-lg`
             : `${theme === "dark" ? "bg-black/60" : "bg-white/60"}`
         } backdrop-blur-xl border-b ${theme === "dark" ? "border-gray-800/50" : "border-gray-200/50"} transition-all duration-300`}
       >
@@ -96,21 +241,19 @@ const Navbar = ({ theme, toggleTheme }: { theme: string; toggleTheme: () => void
           <div className="flex items-center justify-between h-16">
             <motion.a
               href="#"
-              className={`text-2xl font-bold hero-text-gradient ${
-                theme === "light" ? "text-stroke-light" : ""
-              }`}
+              className={`text-2xl font-bold hero-text-gradient ${theme === "light" ? "text-stroke-light" : ""}`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <span className="flex items-center">
                 <motion.span
-                  animate={{ 
+                  animate={{
                     rotateY: [0, 360],
-                    scale: [1, 1.1, 1]
+                    scale: [1, 1.1, 1],
                   }}
-                  transition={{ 
-                    rotateY: { duration: 5, repeat: Infinity, ease: "linear" },
-                    scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                  transition={{
+                    rotateY: { duration: 5, repeat: Number.POSITIVE_INFINITY, ease: "linear" },
+                    scale: { duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
                   }}
                   className="inline-block mr-2"
                 >
@@ -129,7 +272,9 @@ const Navbar = ({ theme, toggleTheme }: { theme: string; toggleTheme: () => void
                     key={link.name}
                     href={link.href}
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      theme === "dark" ? "text-gray-300 hover:text-white hover:bg-white/10" : "text-gray-600 hover:text-black hover:bg-black/10"
+                      theme === "dark"
+                        ? "text-gray-300 hover:text-white hover:bg-white/10"
+                        : "text-gray-600 hover:text-black hover:bg-black/10"
                     }`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -187,29 +332,25 @@ const Navbar = ({ theme, toggleTheme }: { theme: string; toggleTheme: () => void
             exit={{ x: "100%" }}
             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
             className={`fixed right-0 top-0 h-full w-80 shadow-2xl z-50 ${
-              theme === "dark" 
-                ? "bg-gray-900/95 backdrop-blur-xl" 
+              theme === "dark"
+                ? "bg-gray-900/95 backdrop-blur-xl"
                 : "bg-white/95 backdrop-blur-xl border-l border-gray-200"
             }`}
           >
             <div className="p-6">
               <div className="flex justify-between items-center mb-8">
-                <h2 className={`text-xl font-bold hero-text-gradient ${
-                  theme === "light" ? "text-stroke-light" : ""
-                }`}>Navigation</h2>
+                <h2 className={`text-xl font-bold hero-text-gradient ${theme === "light" ? "text-stroke-light" : ""}`}>
+                  Navigation
+                </h2>
                 <motion.button
                   whileHover={{ scale: 1.1, rotate: 90 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setIsOpen(false)}
                   className={`p-2 rounded-full transition-colors ${
-                    theme === "dark"
-                      ? "bg-white/10 hover:bg-white/20"
-                      : "bg-black/10 hover:bg-black/20"
+                    theme === "dark" ? "bg-white/10 hover:bg-white/20" : "bg-black/10 hover:bg-black/20"
                   }`}
                 >
-                  <X className={`w-5 h-5 ${
-                    theme === "dark" ? "text-white" : "text-black"
-                  }`} />
+                  <X className={`w-5 h-5 ${theme === "dark" ? "text-white" : "text-black"}`} />
                 </motion.button>
               </div>
 
@@ -226,14 +367,19 @@ const Navbar = ({ theme, toggleTheme }: { theme: string; toggleTheme: () => void
                           : "text-gray-600 hover:text-black hover:bg-black/10"
                       }`}
                       onClick={() => setIsOpen(false)}
-                      whileHover={{ x: 4, backgroundColor: theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
+                      whileHover={{
+                        x: 4,
+                        backgroundColor: theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+                      }}
                       transition={{ type: "spring", stiffness: 300 }}
                     >
-                      <Icon className={`w-5 h-5 ${
-                        theme === "dark" ? "text-gray-300" : "text-gray-600"
-                      } group-hover:scale-110 transition-transform duration-200`} />
+                      <Icon
+                        className={`w-5 h-5 ${
+                          theme === "dark" ? "text-gray-300" : "text-gray-600"
+                        } group-hover:scale-110 transition-transform duration-200`}
+                      />
                       <span>{link.name}</span>
-                      <motion.div 
+                      <motion.div
                         className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
                         initial={{ x: -5 }}
                         animate={{ x: 0 }}
@@ -246,23 +392,19 @@ const Navbar = ({ theme, toggleTheme }: { theme: string; toggleTheme: () => void
               </div>
 
               <div className="absolute bottom-8 left-6 right-6">
-                <div className={`border-t pt-6 ${
-                  theme === "dark" ? "border-gray-800" : "border-gray-200"
-                }`}>
+                <div className={`border-t pt-6 ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}>
                   <div className="flex justify-center space-x-6">
                     {[
                       { icon: Twitter, href: "https://x.com/sahnik_biswas?t=sp2WgWJVyv6iQL5hzG6hJQ&s=09" },
                       { icon: Github, href: "https://github.com/Sahnik0" },
                       { icon: Linkedin, href: "https://www.linkedin.com/in/sahnik-biswas-8514012a7" },
-                      { icon: Mail, href: "#" }
+                      { icon: Mail, href: "#" },
                     ].map(({ icon: Icon, href }) => (
                       <motion.a
                         key={href}
                         href={href}
                         className={`${
-                          theme === "dark"
-                            ? "text-gray-400 hover:text-white"
-                            : "text-gray-400 hover:text-black"
+                          theme === "dark" ? "text-gray-400 hover:text-white" : "text-gray-400 hover:text-black"
                         } transition-colors`}
                         whileHover={{ scale: 1.2, y: -3 }}
                         whileTap={{ scale: 0.9 }}
@@ -281,115 +423,6 @@ const Navbar = ({ theme, toggleTheme }: { theme: string; toggleTheme: () => void
   )
 }
 
-// Enhanced Feature Card with 3D hover effect
-const FeatureCard: React.FC<FeatureCardProps> = ({
-  icon: Icon,
-  title,
-  description,
-  buttonText,
-  link,
-  theme,
-}: FeatureCardProps) => {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: false, amount: 0.3 })
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  })
-
-  const y = useTransform(scrollYProgress, [0, 1], [100, -100])
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.6, 1], [0, 1, 1, 0])
-
-  // Handle navigation in same tab
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault()
-    window.location.href = link
-  }
-
-  return (
-    <motion.div
-      ref={ref}
-      style={{ opacity }}
-      initial={{ y: 50, opacity: 0 }}
-      animate={isInView ? { y: 0, opacity: 1 } : { y: 50, opacity: 0 }}
-      transition={{ duration: 0.5, delay: 0.1 }}
-      className={`feature-card group perspective p-8 md:p-10 flex flex-col items-center text-center rounded-xl backdrop-blur-sm shadow-lg relative overflow-hidden ${
-        theme === "dark"
-          ? "bg-white/5 hover:bg-white/10 border border-white/10"
-          : "bg-black/5 hover:bg-black/10 border border-gray-200"
-      } transition-all duration-300 cursor-pointer hover:shadow-2xl`}
-    >
-      {/* Animated background gradient */}
-      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
-        theme === "dark" 
-          ? "bg-gradient-to-br from-purple-600/20 via-blue-500/10 to-pink-500/20" 
-          : "bg-gradient-to-br from-purple-600/10 via-blue-500/5 to-pink-500/10"
-      }`} />
-      
-      <motion.div 
-        className="relative z-10"
-        whileHover={{ rotate: 360, scale: 1.2 }} 
-        transition={{ duration: 0.8 }}
-      >
-        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 ${
-          theme === "dark" ? "bg-white/10" : "bg-black/5"
-        } group-hover:scale-110 transition-transform duration-300`}>
-          <Icon 
-            className={`w-12 h-12 ${
-              theme === "dark" ? "text-white" : "text-black"
-            }`} 
-            strokeWidth={1.5} 
-          />
-        </div>
-      </motion.div>
-      
-      <h3 
-        className={`text-2xl font-bold mb-4 ${
-          theme === "light" ? "text-stroke-light" : ""
-        } group-hover:scale-105 transition-transform duration-300 relative z-10`}
-      >
-        {title}
-      </h3>
-      
-      <p 
-        className={`${
-          theme === "dark" ? "text-gray-300" : "text-gray-700"
-        } mb-8 text-lg leading-relaxed relative z-10`}
-      >
-        {description}
-      </p>
-      
-      <motion.a
-        href={link}
-        onClick={handleClick}
-        className={`${
-          theme === "dark"
-            ? "bg-white text-black hover:bg-gray-200"
-            : "bg-black text-white hover:bg-gray-800"
-        } px-8 py-3 rounded-full text-lg font-semibold transition-all flex items-center space-x-2 relative z-10`}
-        whileHover={{ scale: 1.05, x: 5 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <span>{buttonText}</span>
-        <motion.span
-          initial={{ x: 0 }}
-          whileHover={{ x: 5 }}
-          transition={{ type: "spring", stiffness: 400 }}
-        >
-          <ArrowRight className="w-5 h-5" />
-        </motion.span>
-      </motion.a>
-      
-      {/* Corner decoration */}
-      <motion.div 
-        className={`absolute top-0 right-0 w-20 h-20 ${
-          theme === "dark" ? "bg-gradient-to-bl from-purple-500/20 to-transparent" : "bg-gradient-to-bl from-purple-500/10 to-transparent"
-        } -mr-10 -mt-10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-      />
-    </motion.div>
-  )
-}
-
 // Update the FloatingSparkle component with proper typing
 const FloatingSparkle: React.FC<FloatingSparkleProps> = ({ delay = 0, size = 16, theme = "dark" }) => (
   <motion.div
@@ -402,126 +435,165 @@ const FloatingSparkle: React.FC<FloatingSparkleProps> = ({ delay = 0, size = 16,
   </motion.div>
 )
 
-// Enhanced sliding stories component
-const SlidingStories = ({ theme }: { theme: string }) => {
-  const stories = [
+// Enhanced testimonial card
+const TestimonialCard = ({
+  name,
+  role,
+  quote,
+  image,
+  theme,
+}: { name: string; role: string; quote: string; image: string; theme: string }) => {
+  return (
+    <motion.div
+      className={`testimonial-card p-8 rounded-xl ${
+        theme === "dark" ? "bg-white/5 border border-white/10" : "bg-white border border-gray-200"
+      } shadow-lg`}
+      whileHover={{
+        y: -10,
+        boxShadow: theme === "dark" ? "0 20px 25px -5px rgba(0, 0, 0, 0.5)" : "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
+      }}
+    >
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-500">
+          <img src={image || "/placeholder.svg"} alt={name} className="w-full h-full object-cover" />
+        </div>
+        <div>
+          <h4 className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-black"}`}>{name}</h4>
+          <p className={`${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>{role}</p>
+        </div>
+      </div>
+
+      <div className={`mb-4 text-4xl ${theme === "dark" ? "text-purple-400" : "text-purple-600"}`}>"</div>
+
+      <p className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} text-lg leading-relaxed mb-4`}>{quote}</p>
+
+      <div className={`text-4xl text-right ${theme === "dark" ? "text-purple-400" : "text-purple-600"}`}>"</div>
+    </motion.div>
+  )
+}
+
+// Improved testimonials section
+const TestimonialsSection = ({ theme }: { theme: string }) => {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const testimonials = [
     {
-      title: "Albert Einstein",
-      description: "Despite struggling with dyslexia, Einstein revolutionized physics with his theory of relativity. His unique way of thinking, often attributed to his dyslexia, led to groundbreaking scientific discoveries.",
-      icon: Star
+      name: "Albert Einstein",
+      role: "Theoretical Physicist",
+      quote:
+        "Despite struggling with dyslexia, LEXISHIFT's tools helped me organize my thoughts in ways traditional methods couldn't. The specialized features truly understand how dyslexic minds work.",
+      image: "/placeholder.svg?height=200&width=200",
     },
     {
-      title: "Richard Branson",
-      description: "The founder of Virgin Group credits his dyslexia for his business success. His different perspective and problem-solving abilities helped him build a global business empire.",
-      icon: Star
+      name: "Richard Branson",
+      role: "Entrepreneur, Virgin Group",
+      quote:
+        "As someone with dyslexia, finding LEXISHIFT was a game-changer. Their community support and specialized tools have helped me communicate my ideas more effectively than ever before.",
+      image: "/placeholder.svg?height=200&width=200",
     },
     {
-      title: "Steven Spielberg",
-      description: "Diagnosed with dyslexia at age 60, Spielberg's creative storytelling and visual thinking helped him become one of the most influential filmmakers in cinema history.",
-      icon: Star
+      name: "Steven Spielberg",
+      role: "Film Director",
+      quote:
+        "LEXISHIFT understands that dyslexia isn't a limitation but a different way of thinking. Their text converter transformed how I approach scripts and storytelling.",
+      image: "/placeholder.svg?height=200&width=200",
     },
     {
-      title: "Tom Cruise",
-      description: "Diagnosed with dyslexia at age 7, Cruise overcame reading challenges to become one of Hollywood's most successful actors, proving that dyslexia doesn't limit potential.",
-      icon: Star
+      name: "Tom Cruise",
+      role: "Actor",
+      quote:
+        "The learning resources at LEXISHIFT helped me develop strategies that turned my dyslexia into a strength. I recommend it to anyone looking to embrace their unique cognitive style.",
+      image: "/placeholder.svg?height=200&width=200",
     },
-    {
-      title: "Walt Disney",
-      description: "Despite his dyslexia, Disney built an entertainment empire and revolutionized animation, showing that creativity knows no bounds.",
-      icon: Star
-    },
-    {
-      title: "John Lennon",
-      description: "The legendary Beatles musician had dyslexia but turned his unique perspective into groundbreaking musical innovations and artistic expressions.",
-      icon: Star
-    }
   ]
 
-  // Duplicate the stories array for seamless loop
-  const duplicatedStories = [...stories, ...stories]
+  const nextTestimonial = () => {
+    setActiveIndex((prev) => (prev + 1) % testimonials.length)
+  }
+
+  const prevTestimonial = () => {
+    setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+  }
 
   return (
-    <div className="relative overflow-hidden py-10">
-      {/* Add gradient masks for smooth fade effect */}
-      <div className={`absolute left-0 top-0 bottom-0 w-32 z-10 pointer-events-none
-        ${theme === "dark" 
-          ? "bg-gradient-to-r from-black to-transparent" 
-          : "bg-gradient-to-r from-white to-transparent"}`} 
-      />
-      <div className={`absolute right-0 top-0 bottom-0 w-32 z-10 pointer-events-none
-        ${theme === "dark" 
-          ? "bg-gradient-to-l from-black to-transparent" 
-          : "bg-gradient-to-l from-white to-transparent"}`} 
-      />
+    <div className="py-16">
+      <div className="text-center mb-16">
+        <h2
+          className={`text-4xl md:text-6xl font-bold mb-8 hero-text-gradient ${
+            theme === "light" ? "text-stroke-heavy" : ""
+          }`}
+        >
+          What Our Users Say
+        </h2>
+        <p
+          className={`text-xl ${
+            theme === "dark" ? "text-gray-300" : "text-gray-700"
+          } max-w-3xl mx-auto leading-relaxed`}
+        >
+          Hear from individuals who have transformed their experience with dyslexia using LEXISHIFT
+        </p>
+      </div>
 
-      <motion.div
-        animate={{
-          x: [0, -50 * stories.length],
-        }}
-        transition={{
-          x: {
-            repeat: Infinity,
-            repeatType: "loop",
-            duration: 30,
-            ease: "linear",
-          },
-        }}
-        className="flex gap-8"
-      >
-        {duplicatedStories.map((story, index) => {
-          const Icon = story.icon;
-          return (
-            <motion.div
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {testimonials.slice(0, 3).map((testimonial, index) => (
+            <TestimonialCard
               key={index}
-              className={`flex-shrink-0 w-[400px] p-8 rounded-xl backdrop-blur-sm shadow-lg relative overflow-hidden
-                ${theme === "dark"
-                  ? "bg-white/5 border border-white/10"
-                  : "bg-black/5 border border-gray-200"
-                } transition-all duration-300`}
-              whileHover={{ 
-                scale: 1.05,
-                backgroundColor: theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
-                transition: { duration: 0.2 }
-              }}
-            >
-              {/* Animated background gradient */}
-              <motion.div 
-                className={`absolute top-0 left-0 right-0 h-1 ${
-                  theme === "dark" ? "bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" : "bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
-                }`}
-                initial={{ width: 0 }}
-                whileHover={{ width: "100%" }}
+              name={testimonial.name}
+              role={testimonial.role}
+              quote={testimonial.quote}
+              image={testimonial.image}
+              theme={theme}
+            />
+          ))}
+        </div>
+
+        {/* Mobile Testimonial Carousel */}
+        <div className="md:hidden mt-12">
+          <div className="relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeIndex}
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -100 }}
                 transition={{ duration: 0.3 }}
-              />
-              
-              <div className="flex items-start mb-4">
-                <div className={`p-2 rounded-full ${
-                  theme === "dark" ? "bg-white/10" : "bg-black/5"
-                } mr-4`}>
-                  <Icon className={`w-6 h-6 ${
-                    theme === "dark" ? "text-purple-400" : "text-purple-600"
-                  }`} />
-                </div>
-                <motion.h3 
-                  className={`text-2xl font-bold ${theme === "light" ? "text-stroke-light" : ""}`}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  {story.title}
-                </motion.h3>
-              </div>
-              
-              <p className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"} leading-relaxed`}>
-                {story.description}
-              </p>
-              
-              {/* Decorative element */}
-              <div className={`absolute bottom-3 right-3 opacity-10 ${theme === "dark" ? "text-white" : "text-black"}`}>
-                <Sparkles size={24} />
-              </div>
-            </motion.div>
-          );
-        })}
-      </motion.div>
+              >
+                <TestimonialCard
+                  name={testimonials[activeIndex].name}
+                  role={testimonials[activeIndex].role}
+                  quote={testimonials[activeIndex].quote}
+                  image={testimonials[activeIndex].image}
+                  theme={theme}
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            <div className="flex justify-center mt-8 gap-4">
+              <motion.button
+                onClick={prevTestimonial}
+                className={`p-3 rounded-full ${
+                  theme === "dark" ? "bg-white/10 hover:bg-white/20" : "bg-black/10 hover:bg-black/20"
+                }`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <ChevronLeft className={`w-5 h-5 ${theme === "dark" ? "text-white" : "text-black"}`} />
+              </motion.button>
+
+              <motion.button
+                onClick={nextTestimonial}
+                className={`p-3 rounded-full ${
+                  theme === "dark" ? "bg-white/10 hover:bg-white/20" : "bg-black/10 hover:bg-black/20"
+                }`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <ChevronRight className={`w-5 h-5 ${theme === "dark" ? "text-white" : "text-black"}`} />
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -589,7 +661,7 @@ function App() {
     if (savedTheme) {
       setTheme(savedTheme)
     }
-    
+
     // Track scrolling for animations
     const handleScroll = () => {
       setIsScrolling(true)
@@ -598,13 +670,71 @@ function App() {
         setIsScrolling(false)
       }, 100) as unknown as number
     }
-    
-    window.addEventListener('scroll', handleScroll)
+
+    window.addEventListener("scroll", handleScroll)
     return () => {
-      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener("scroll", handleScroll)
       clearTimeout(window.scrollTimeout)
     }
   }, [])
+
+  // Features data
+  const features = [
+    {
+      icon: Brain,
+      title: "Consult a Doctor",
+      description:
+        "Connect with specialized healthcare professionals for personalized guidance and support. Our network of experts understands the unique challenges of dyslexia and provides tailored advice for your specific needs.",
+      buttonText: "Find Specialists",
+      link: "#",
+      videoUrl: "https://example.com/doctor-consultation.mp4",
+    },
+    {
+      icon: Users,
+      title: "Community Support",
+      description:
+        "Join our vibrant community of individuals sharing experiences and support. Connect with others who understand your journey, share strategies, and build lasting relationships with people who truly get it.",
+      buttonText: "Join Community",
+      link: "#",
+      videoUrl: "https://example.com/community-support.mp4",
+    },
+    {
+      icon: FileText,
+      title: "Dyslexia-Friendly Converter",
+      description:
+        "Transform any text into an easy-to-read format optimized for dyslexic readers. Our innovative technology adjusts spacing, font, and layout to make reading more accessible and enjoyable for everyone.",
+      buttonText: "Try Converter",
+      link: "#",
+      videoUrl: "https://example.com/text-converter.mp4",
+    },
+    {
+      icon: GraduationCap,
+      title: "Learning Platform",
+      description:
+        "Access specialized educational resources tailored to your learning style. Our platform offers interactive lessons, exercises, and tools designed specifically for dyslexic learners to build confidence and skills.",
+      buttonText: "Start Learning",
+      link: "#",
+      videoUrl: "https://example.com/learning-platform.mp4",
+    },
+    {
+      icon: BookOpen,
+      title: "Digital Library",
+      description:
+        "Access our extensive collection of dyslexia-friendly books and reading materials. Enjoy literature, textbooks, and articles formatted specifically for easier reading with adjustable settings to match your preferences.",
+      buttonText: "Browse Library",
+      link: "#",
+      videoUrl: "https://example.com/digital-library.mp4",
+    },
+    {
+      icon: MessageSquareMore,
+      title: "AI Therapist",
+      description:
+        "Get instant help and guidance from our AI-powered Therapist, available 24/7 to assist with any questions. Our advanced AI understands dyslexia-related challenges and provides personalized support whenever you need it.",
+      buttonText: "Start Chat",
+      link: "#",
+      videoUrl: "https://example.com/ai-therapist.mp4",
+    },
+  ]
 
   return (
     <div
@@ -625,16 +755,16 @@ function App() {
           pointerEvents: "none",
         }}
       >
-        <motion.div 
+        <motion.div
           className={`w-8 h-8 rounded-full ${theme === "dark" ? "bg-white" : "bg-black"} opacity-20 flex items-center justify-center`}
-          animate={{ 
+          animate={{
             scale: isScrolling ? 0.5 : 1,
-            opacity: isScrolling ? 0.5 : 0.2
+            opacity: isScrolling ? 0.5 : 0.2,
           }}
           transition={{ duration: 0.2 }}
         >
           {isScrolling && (
-            <motion.div 
+            <motion.div
               className={`w-2 h-2 rounded-full ${theme === "dark" ? "bg-white" : "bg-black"}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -653,12 +783,7 @@ function App() {
         {/* Enhanced sparkle effects */}
         <motion.div style={{ y, opacity }} className="absolute inset-0 grid grid-cols-6 grid-rows-6 gap-4 p-4">
           {Array.from({ length: 36 }).map((_, i) => (
-            <FloatingSparkle 
-              key={i} 
-              delay={i * 0.1} 
-              size={(i % 3 + 1) * 8}
-              theme={theme}
-            />
+            <FloatingSparkle key={i} delay={i * 0.1} size={((i % 3) + 1) * 8} theme={theme} />
           ))}
         </motion.div>
 
@@ -673,33 +798,37 @@ function App() {
             >
               <div className="relative inline-block">
                 <motion.div
-                  animate={{ 
+                  animate={{
                     rotate: 360,
-                    background: ["linear-gradient(to right, #8a2387, #e94057, #f27121)", "linear-gradient(to right, #f27121, #8a2387, #e94057)", "linear-gradient(to right, #e94057, #f27121, #8a2387)"]
+                    background: [
+                      "linear-gradient(to right, #8a2387, #e94057, #f27121)",
+                      "linear-gradient(to right, #f27121, #8a2387, #e94057)",
+                      "linear-gradient(to right, #e94057, #f27121, #8a2387)",
+                    ],
                   }}
-                  transition={{ 
+                  transition={{
                     rotate: { duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" },
-                    background: { duration: 10, repeat: Number.POSITIVE_INFINITY }
+                    background: { duration: 10, repeat: Number.POSITIVE_INFINITY },
                   }}
                   className="absolute inset-0 rounded-full blur-xl opacity-30"
                 />
-                <motion.h1 
+                <motion.h1
                   className={`text-7xl xl:text-8xl font-bold hero-text-gradient tracking-tight relative z-10 ${
                     theme === "light" ? "text-stroke-heavy" : ""
                   }`}
                   initial={{ scale: 0.9 }}
                   animate={{ scale: 1 }}
-                  transition={{ 
+                  transition={{
                     duration: 2,
                     repeat: Number.POSITIVE_INFINITY,
                     repeatType: "reverse",
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 >
                   LEXISHIFT
                 </motion.h1>
               </div>
-              
+
               <motion.p
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -708,7 +837,7 @@ function App() {
               >
                 Empowering dyslexic individuals with innovative tools and support for a brighter future
               </motion.p>
-              
+
               <motion.div
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -718,7 +847,7 @@ function App() {
                 <motion.button
                   onClick={scrollToFeatures}
                   className={`${
-                    theme === "dark" 
+                    theme === "dark"
                       ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600"
                       : "bg-black text-white hover:bg-gray-800"
                   } px-12 py-4 rounded-full text-xl font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg`}
@@ -744,7 +873,7 @@ function App() {
                 className="relative w-[500px] h-[500px]"
               >
                 <div className="absolute inset-0 w-full h-full blur-3xl bg-gradient-to-r from-purple-500/30 to-blue-500/30 rounded-full" />
-                
+
                 <DotLottieReact
                   src="https://lottie.host/05c826c4-9798-4c3c-9246-8e4ad3701edc/u28uCnJp6f.lottie"
                   loop
@@ -772,13 +901,12 @@ function App() {
         </motion.div>
       </motion.div>
 
-      {/* Features Section */}
-      <motion.div
-        ref={featuresRef}
-        style={{ scale: featuresScale, opacity: featuresOpacity }}
-        className={`py-24 md:py-32 px-4 ${theme === "dark" ? "bg-black" : "bg-white"}`}
-      >
-        <div className="container mx-auto max-w-7xl">
+      {/* Features Timeline Section */}
+      <div ref={featuresRef} className={`py-24 md:py-32 px-4 ${theme === "dark" ? "bg-black" : "bg-white"} relative`}>
+        {/* Timeline line */}
+        <div className="absolute left-1/2 top-32 bottom-32 w-0.5 hidden md:block bg-gradient-to-b from-purple-600 via-blue-500 to-pink-500 opacity-30"></div>
+
+        <div className="container mx-auto max-w-6xl relative">
           <motion.h2
             className={`text-4xl md:text-6xl font-bold text-center mb-20 hero-text-gradient ${
               theme === "light" ? "text-stroke-heavy" : ""
@@ -790,59 +918,16 @@ function App() {
           >
             Our Features
           </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {[
-              {
-                icon: Brain,
-                title: "Consult a Doctor",
-                description: "Connect with specialized healthcare professionals for personalized guidance and support.",
-                buttonText: "Find Specialists",
-                link: "#",
-              },
-              {
-                icon: Users,
-                title: "Community Support",
-                description: "Join our vibrant community of individuals sharing experiences and support.",
-                buttonText: "Join Community",
-                link: "#",
-              },
-              {
-                icon: FileText,
-                title: "Dyslexia-Friendly Converter",
-                description: "Transform any text into an easy-to-read format optimized for dyslexic readers.",
-                buttonText: "Try Converter",
-                link: "#",
-              },
-              {
-                icon: GraduationCap,
-                title: "Learning Platform",
-                description: "Access specialized educational resources tailored to your learning style.",
-                buttonText: "Start Learning",
-                link: "#",
-              },
-              {
-                icon: BookOpen,
-                title: "Digital Library",
-                description: "Access our extensive collection of dyslexia-friendly books and reading materials.",
-                buttonText: "Browse Library",
-                link: "#",
-              },
-              {
-                icon: MessageSquareMore,
-                title: "AI Therapist",
-                description:
-                  "Get instant help and guidance from our AI-powered Therapist, available 24/7 to assist with any questions.",
-                buttonText: "Start Chat",
-                link: "#",
-              },
-            ].map((feature, index) => (
-              <FeatureCard key={index} {...feature} index={index} theme={theme} />
+
+          <div className="space-y-16">
+            {features.map((feature, index) => (
+              <FeatureTimelineItem key={index} {...feature} isReversed={index % 2 !== 0} theme={theme} />
             ))}
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Success Stories Section */}
+      {/* Testimonials Section */}
       <motion.div
         id="about"
         ref={aboutRef}
@@ -852,20 +937,44 @@ function App() {
         }`}
       >
         <div className="container mx-auto max-w-7xl">
-          <motion.div className="text-center mb-16">
-            <h2 className={`text-4xl md:text-6xl font-bold mb-8 hero-text-gradient ${
-              theme === "light" ? "text-stroke-heavy" : ""
-            }`}>Success Stories</h2>
-            <p className={`text-xl ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            } max-w-3xl mx-auto leading-relaxed`}>
-              Discover inspiring stories of individuals who have overcome dyslexia and achieved remarkable success in their fields.
-            </p>
-          </motion.div>
-
-          <SlidingStories theme={theme} />
+          <TestimonialsSection theme={theme} />
         </div>
       </motion.div>
+
+      {/* Stats Section */}
+      <div className={`py-16 ${theme === "dark" ? "bg-black" : "bg-white"}`}>
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { icon: Users, value: "10,000+", label: "Active Users" },
+              { icon: Clock, value: "24/7", label: "Support Available" },
+              { icon: Award, value: "98%", label: "Satisfaction Rate" },
+              { icon: Brain, value: "50+", label: "Specialized Tools" },
+            ].map((stat, index) => {
+              const Icon = stat.icon
+              return (
+                <motion.div
+                  key={index}
+                  className={`p-8 rounded-xl text-center ${
+                    theme === "dark" ? "bg-white/5 border border-white/10" : "bg-black/5 border border-gray-200"
+                  }`}
+                  whileHover={{ y: -10 }}
+                >
+                  <div className="flex justify-center mb-4">
+                    <div className={`p-4 rounded-full ${theme === "dark" ? "bg-purple-600/20" : "bg-purple-600/10"}`}>
+                      <Icon className={`w-8 h-8 ${theme === "dark" ? "text-purple-400" : "text-purple-600"}`} />
+                    </div>
+                  </div>
+                  <h3 className={`text-4xl font-bold mb-2 ${theme === "light" ? "text-stroke-light" : ""}`}>
+                    {stat.value}
+                  </h3>
+                  <p className={`${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>{stat.label}</p>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
 
       {/* Footer */}
       <footer
@@ -874,9 +983,9 @@ function App() {
         <div className="container mx-auto max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
             <div>
-              <h3 className={`text-2xl font-bold mb-6 hero-text-gradient ${
-                theme === "light" ? "text-stroke-light" : ""
-              }`}>
+              <h3
+                className={`text-2xl font-bold mb-6 hero-text-gradient ${theme === "light" ? "text-stroke-light" : ""}`}
+              >
                 LEXISHIFT
               </h3>
               <p className={`${theme === "dark" ? "text-gray-400" : "text-gray-600"} text-lg`}>
@@ -988,7 +1097,8 @@ function App() {
         </div>
       </footer>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
+

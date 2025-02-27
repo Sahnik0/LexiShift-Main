@@ -1,0 +1,10 @@
+Flask
+reportlab
+pytesseract
+Pillow
+PyPDF2
+scikit-learn
+pandas
+numpy
+gunicorn
+pdfplumber
