@@ -1,0 +1,37 @@
+name: lexilearn_app
+description: A simple Flutter app with a landing page and navigation.
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  url_launcher: ^6.1.14
+  flutter_svg: ^2.0.9
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/sound/butterfly.opus
+    - assets/sound/butterfly-lesson.opus
+    - assets/images/img1.png
+    - assets/images/img2.png
+    - assets/images/img3.png
+    - assets/images/img4.png
+    - assets/images/img5.png
+    - assets/images/img6.png
+    - assets/images/landing_illustration.svg
+
+  fonts:
+    - family: OpenDyslexic
+      fonts:
+        - asset: assets/font/OpenDyslexic.ttf
