@@ -855,83 +855,6 @@ function closeFeedbackPopup() {
     <div class="scroll-to-top" id="scroll-to-top">&#9650;</div>
     <canvas id="cursor-animation"></canvas>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-      $("#convertForm").on("submit", function () {
-  setTimeout(function () {
-    showFeedbackPopup();
-  }, 20000); 
-});
-
-function showFeedbackPopup() {
-  document.getElementById("feedbackPopup").style.display = "flex";
-}
-
-function closeFeedbackPopup() {
-  const popup = document.getElementById("feedbackPopup");
-  popup.style.animation = "fadeOut 0.3s ease-out";
-  setTimeout(() => {
-    popup.style.display = "none";
-    popup.style.animation = "";
-  }, 300);
-}
-
-function sendFeedback(feedback) {
-  $.ajax({
-    url: "/feedback",
-    type: "POST",
-    contentType: "application/json",
-    data: JSON.stringify({
-      feedback: feedback,
-      font_name: $("#font_name").val(),
-      font_size: $("#font_size").val(),
-      line_spacing: $("#line_spacing").val(),
-      letter_spacing: $("#letter_spacing").val(),
-      text_color: $("#text_color").val(),
-    }),
-    success: function (response) {
-      showThankYouMessage();
-    },
-  });
-}
-
-function showThankYouMessage() {
-  const content = document.querySelector(".feedback-content");
-  content.innerHTML = `
-    <h2>Thank You!</h2>
-    <p>We appreciate your feedback.</p>
-    <button onclick="closeFeedbackPopup()" class="btn btn-good">Close</button>
-  `;
-}
-    </script>
-
-   <script>
-document.getElementById('convertForm').addEventListener('submit', function(event) {
-  event.preventDefault();
-  const formData = new FormData(this);
-
-  fetch('/ai_recommendations', {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    const recommendationsList = document.getElementById('ai-recommendations-list');
-    recommendationsList.innerHTML = '';
-
-    data.recommendations.forEach(rec => {
-      const li = document.createElement('li');
-      li.textContent = rec;
-      recommendationsList.appendChild(li);
-    });
-  })
-  .catch(error => console.error('Error:', error));
-});
-
-</script>
-
-    
-
     <script>
       const canvas = document.getElementById("cursor-animation");
       const ctx = canvas.getContext("2d");
@@ -1102,13 +1025,8 @@ document.getElementById('convertForm').addEventListener('submit', function(event
       progressText.textContent = `${Math.round(value)}%`;
     }
   }
-  
+
 </script>
-
-
- 
-
-
 
   </body>
 </html>
